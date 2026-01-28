@@ -11708,6 +11708,7 @@
 
             // Filter sales based on search and filters
             let filteredSales = state.sales.slice();
+            filteredSales = filteredSales.filter(s => !(s && s.deleted === true));
 
             if (state.searchPeriod) {
                 const Period = state.searchPeriod.toLowerCase();
@@ -12164,13 +12165,14 @@
             );
         }
 
-        function setupSalesVirtual(){ try { const el=document.getElementById('salesList'); if(!el) return; let items=(state.lastFilteredSales||state.sales||[]).slice(); const count = (state.listShowCount && state.listShowCount.sales) ? state.listShowCount.sales : 3; items = items.slice(0, Math.max(0, Math.min(items.length, count))); createVirtualList(el, items, renderSaleItemHTML, 120, 6); } catch {} }
+        async function setupSalesVirtual(){ try { const el=document.getElementById('salesList'); if(!el) return; let items=(state.lastFilteredSales||state.sales||[]).slice(); try{ if(window.tubaDB){ const rows=await window.tubaDB.getAll('sales', false); if(Array.isArray(rows)&&rows.length){ items=rows.slice(); } } }catch{} if(state.searchPeriod){ const q=state.searchPeriod.toLowerCase(); items=items.filter(s=> String(s.productName||'').toLowerCase().includes(q)|| String(s.customer||'').toLowerCase().includes(q)|| String(s.payment||'').toLowerCase().includes(q)); } if(state.filterDateFrom){ items=items.filter(s=> new Date(s.date) >= new Date(state.filterDateFrom)); } if(state.filterDateTo){ items=items.filter(s=> new Date(s.date) <= new Date(state.filterDateTo)); } if(state.filterCustomer){ items=items.filter(s=> s.customer===state.filterCustomer); } try{ if(!state.showSalesHistory && !state.filterDateFrom && !state.filterDateTo){ const today=getTodayDateString(); items=items.filter(s=> String(s.date)===String(today)); } }catch{} items=items.filter(s=> !(s && s.deleted===true)); try{ items.sort((a,b)=> Number(b.timestamp)-Number(a.timestamp)); }catch{} const count=(state.listShowCount && state.listShowCount.sales)? state.listShowCount.sales:3; items=items.slice(0, Math.max(0, Math.min(items.length, count))); createVirtualList(el, items, renderSaleItemHTML, 120, 6); } catch {} }
 
         function renderSalesList() {
             const container = document.getElementById('salesList');
             if (!container) return;
 
             let filteredSales = state.sales.slice();
+            filteredSales = filteredSales.filter(s => !(s && s.deleted === true));
 
             if (state.searchPeriod) {
                 const Period = state.searchPeriod.toLowerCase();
@@ -12266,7 +12268,7 @@
             );
         }
 
-        function setupExpensesVirtual(){ try { const el=document.getElementById('expensesList'); if(!el) return; let arr=(state.expenses||[]).slice(); if(state.searchPeriod){ const q=state.searchPeriod.toLowerCase(); arr=arr.filter(e=> String(e.description||'').toLowerCase().includes(q) || String(e.category||'').toLowerCase().includes(q) || String(e.payment||'').toLowerCase().includes(q) || String(e.comment||'').toLowerCase().includes(q)); } if(state.filterDateFrom){ arr=arr.filter(e=> new Date(e.date) >= new Date(state.filterDateFrom)); } if(state.filterDateTo){ arr=arr.filter(e=> new Date(e.date) <= new Date(state.filterDateTo)); } if(state.filterCategory){ arr=arr.filter(e=> e.category===state.filterCategory); } try{ arr.sort((a,b)=> Number(b.timestamp)-Number(a.timestamp)); }catch{} createVirtualList(el, arr, renderExpenseItemHTML, 120, 6); } catch {} }
+        async function setupExpensesVirtual(){ try { const el=document.getElementById('expensesList'); if(!el) return; let arr=(state.expenses||[]).slice(); try{ if(window.tubaDB){ const rows=await window.tubaDB.getAll('expenses', false); if(Array.isArray(rows)&&rows.length){ arr=rows.slice(); } } }catch{} if(state.searchPeriod){ const q=state.searchPeriod.toLowerCase(); arr=arr.filter(e=> String(e.description||'').toLowerCase().includes(q) || String(e.category||'').toLowerCase().includes(q) || String(e.payment||'').toLowerCase().includes(q) || String(e.comment||'').toLowerCase().includes(q)); } if(state.filterDateFrom){ arr=arr.filter(e=> new Date(e.date) >= new Date(state.filterDateFrom)); } if(state.filterDateTo){ arr=arr.filter(e=> new Date(e.date) <= new Date(state.filterDateTo)); } if(state.filterCategory){ arr=arr.filter(e=> e.category===state.filterCategory); } arr=arr.filter(e=> !(e && e.deleted===true)); try{ arr.sort((a,b)=> Number(b.timestamp)-Number(a.timestamp)); }catch{} createVirtualList(el, arr, renderExpenseItemHTML, 120, 6); } catch {} }
 
         function renderIncomeItemHTML(i){
             const editing = state.inlineEditIncome && state.inlineEditIncome[i.timestamp];
@@ -12296,7 +12298,7 @@
             );
         }
 
-        function setupIncomeVirtual(){ try { const el=document.getElementById('incomeList'); if(!el) return; let arr=(state.income||[]).slice(); if(state.searchPeriod){ const q=state.searchPeriod.toLowerCase(); arr=arr.filter(i=> String(i.source||'').toLowerCase().includes(q) || String(i.payment||'').toLowerCase().includes(q) || String(i.comment||'').toLowerCase().includes(q)); } if(state.filterDateFrom){ arr=arr.filter(i=> new Date(i.date) >= new Date(state.filterDateFrom)); } if(state.filterDateTo){ arr=arr.filter(i=> new Date(i.date) <= new Date(state.filterDateTo)); } if(state.filterSource){ arr=arr.filter(i=> i.source===state.filterSource); } try{ arr.sort((a,b)=> Number(b.timestamp)-Number(a.timestamp)); }catch{} createVirtualList(el, arr, renderIncomeItemHTML, 110, 6); } catch {} }
+        async function setupIncomeVirtual(){ try { const el=document.getElementById('incomeList'); if(!el) return; let arr=(state.income||[]).slice(); try{ if(window.tubaDB){ const rows=await window.tubaDB.getAll('income', false); if(Array.isArray(rows)&&rows.length){ arr=rows.slice(); } } }catch{} if(state.searchPeriod){ const q=state.searchPeriod.toLowerCase(); arr=arr.filter(i=> String(i.source||'').toLowerCase().includes(q) || String(i.payment||'').toLowerCase().includes(q) || String(i.comment||'').toLowerCase().includes(q)); } if(state.filterDateFrom){ arr=arr.filter(i=> new Date(i.date) >= new Date(state.filterDateFrom)); } if(state.filterDateTo){ arr=arr.filter(i=> new Date(i.date) <= new Date(state.filterDateTo)); } if(state.filterSource){ arr=arr.filter(i=> i.source===state.filterSource); } arr=arr.filter(i=> !(i && i.deleted===true)); try{ arr.sort((a,b)=> Number(b.timestamp)-Number(a.timestamp)); }catch{} createVirtualList(el, arr, renderIncomeItemHTML, 110, 6); } catch {} }
 
         function updateFilterDateFrom(value) {
             state.filterDateFrom = value;
@@ -13351,7 +13353,7 @@
                 { id: 'yas', label: 'Yas Tanzania' }
             ];
             const currentChannel = state.activeTransactionChannel || 'mpesa';
-            const channelTransactions = (state.transactions || []).filter(t => t.channel === currentChannel);
+            const channelTransactions = (state.transactions || []).filter(t => t.channel === currentChannel).filter(t => !(t && t.deleted === true));
 
             const floatData = state.transactionFloats[currentChannel];
             const accountDiff = (floatData.currentAccount || 0) - (floatData.initialAccount || 0);
@@ -13464,6 +13466,7 @@
         function renderTransactionsList(transactions, searchPeriod = '') {
             const q = (searchPeriod || state.transactionSearch || '').toLowerCase();
             let filtered = transactions.filter(t => !q || (t.customerName && t.customerName.toLowerCase().includes(q)) || t.type.toLowerCase().includes(q) || t.channel.toLowerCase().includes(q));
+            filtered = filtered.filter(t => !(t && t.deleted === true));
 
             if (filtered.length === 0) {
                 return '<p style="text-align: center; color: #666;">No transactions found</p>';
@@ -13747,7 +13750,7 @@
                 </div>
 
                 <div class="card">
-                    <h2>All Items (${state.products.length})</h2>
+                    <h2>All Items (${(state.products || []).filter(p => !(p && p.deleted === true)).length})</h2>
     <div class="search-box">
         <input type="search" name="search_field_unique_${Date.now()}" autocomplete="off" placeholder="🔍 Search items..." oninput="searchProducts(this.value); toggleClearButton('productSearchBottom', 'productClearBtnBottom')" id="productSearchBottom" value="${q}" readonly onfocus="this.removeAttribute('readonly');">
         <button id="productClearBtnBottom" class="clear-btn btn-small btn-secondary hint ${String(q || '').trim() ? 'visible' : ''}" onclick="clearProductSearch()">Clear</button>
@@ -14120,7 +14123,7 @@
         }
 
         function renderProductsList(searchPeriod = '') {
-            let products = state.products;
+            let products = state.products.filter(p => !(p && p.deleted === true));
             if (searchPeriod) {
                 const Period = searchPeriod.toLowerCase();
                 products = products.filter(p =>
@@ -14857,6 +14860,7 @@
             const stats = getStats();
 
             let filteredExpenses = state.expenses.slice();
+            filteredExpenses = filteredExpenses.filter(e => !(e && e.deleted === true));
 
             if (state.searchPeriod) {
                 const Period = state.searchPeriod.toLowerCase();
@@ -15102,6 +15106,7 @@
         function renderIncome() {
             const stats = getStats();
             let filtered = (state.income || []).slice();
+            filtered = filtered.filter(i => !(i && i.deleted === true));
             if (state.searchPeriod) {
                 const q = state.searchPeriod.toLowerCase();
                 filtered = filtered.filter(i => String(i.source || '').toLowerCase().includes(q) || String(i.comment || '').toLowerCase().includes(q));
@@ -15348,7 +15353,7 @@
         }
 
         function renderInventory() {
-            const trackedProducts = state.products.filter(p => p.hasStock !== false);
+            const trackedProducts = state.products.filter(p => p.hasStock !== false && !(p && p.deleted === true));
             const lowStock = trackedProducts.filter(p => {
                 const inv = state.inventory[p.name] || { stock: 0, minAlert: 5 };
                 return inv.stock <= inv.minAlert;
@@ -15386,7 +15391,7 @@
 
         function renderStockList(query) {
             const q = String(query || '').toLowerCase();
-            const trackedProducts = state.products.filter(p => p.hasStock !== false);
+            const trackedProducts = state.products.filter(p => p.hasStock !== false && !(p && p.deleted === true));
             const count = (state.listShowCount && state.listShowCount.inventory) ? state.listShowCount.inventory : 3;
             return trackedProducts.filter(p => !q || p.name.toLowerCase().includes(q) || String(p.category || '').toLowerCase().includes(q)).slice(0, count).map(p => {
                 const inv = state.inventory[p.name] || { stock: 0, minAlert: 5 };
@@ -15426,8 +15431,8 @@
         // Unified Inventory Tab: Purchases + Stock
         function renderInventoryTab() {
             // Summary
-            const purchases = (state.inventoryPurchases || []);
-            const cycles = (state.inventoryPurchaseCycles || []);
+            const purchases = (state.inventoryPurchases || []).filter(p => !(p && p.deleted === true));
+            const cycles = (state.inventoryPurchaseCycles || []).filter(c => !(c && c.deleted === true));
             const totalSpent = purchases.reduce((s, p) => s + (Number(p.totalCost) || Number(p.buyingPrice) || 0), 0);
             const uniqueSuppliers = Array.from(new Set(purchases.map(p => (p.supplierName || '').trim()).filter(Boolean))).length;
 
@@ -17424,7 +17429,7 @@
 
         function renderCustomers() {
             const q = state.customerSearch || '';
-            let sortedCustomers = [...state.customers];
+            let sortedCustomers = [...state.customers].filter(c => !(c && c.deleted === true));
             const sort = state.customerSort || 'purchases_desc';
             if (sort === 'name_asc') {
                 sortedCustomers.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
@@ -17463,7 +17468,7 @@
                     </div>
 
                 <div class="card">
-                    <h2>All Customers (${state.customers.length})</h2>
+                    <h2>All Customers (${(state.customers || []).filter(c => !(c && c.deleted === true)).length})</h2>
                     <div class="card-header-buttons"><button class="btn-small" onclick="copyAllCustomers()">📋 Copy All</button></div>
                     <div class="flex-gap" style="align-items:center;margin-bottom:8px;">
                         <input type="search" name="search_field_unique_${Date.now()}" autocomplete="off" placeholder="🔍 Search customers..." oninput="searchCustomers(this.value)" id="customerSearch" value="${q}" style="flex:1;" readonly onfocus="this.removeAttribute('readonly');">
@@ -17498,6 +17503,7 @@
 
         function renderCustomersList(searchPeriod = '', sorted = null) {
             let customers = Array.isArray(sorted) ? sorted : state.customers;
+            customers = customers.filter(c => !(c && c.deleted === true));
             if (searchPeriod) {
                 const Period = searchPeriod.toLowerCase();
                 customers = customers.filter(c =>
@@ -17965,8 +17971,8 @@
 
         function renderInvoices() {
             const stats = getStats();
-            const unpaidCount = (state.invoices || []).filter(i => i.status !== 'Paid').length;
-            const overdueCount = (state.invoices || []).filter(i => i.status !== 'Paid' && new Date(i.dueDate) < new Date()).length;
+            const unpaidCount = (state.invoices || []).filter(i => i.status !== 'Paid' && i.deleted !== true).length;
+            const overdueCount = (state.invoices || []).filter(i => i.status !== 'Paid' && i.deleted !== true && new Date(i.dueDate) < new Date()).length;
             const draft = (state.invoiceDraft && typeof state.invoiceDraft === 'object') ? state.invoiceDraft : {};
             const draftCustomer = (draft.customerSelect != null) ? String(draft.customerSelect) : '';
             const draftItems = (Array.isArray(draft.items) && draft.items.length) ? draft.items : [{ description: '', amount: '' }];
@@ -18153,9 +18159,9 @@
     </div>
 
     <div class="card">
-        <h2>Unpaid Invoices (${state.invoices.filter(i => i.status !== 'Paid' && matchesInvoiceSearch(i) && matchesInvoiceTagFilter(i)).length})</h2>
+        <h2>Unpaid Invoices (${state.invoices.filter(i => i.status !== 'Paid' && i.deleted !== true && matchesInvoiceSearch(i) && matchesInvoiceTagFilter(i)).length})</h2>
         
-        ${state.invoices.filter(i => i.status !== 'Paid' && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).length > 0 ? `
+        ${state.invoices.filter(i => i.status !== 'Paid' && i.deleted !== true && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).length > 0 ? `
             <div class="bulk-actions">
                 <input type="checkbox" id="selectAll_unpaid_invoices" onchange="toggleSelectAllUnpaidInvoices()" class="checkbox-select">
                 <label for="selectAll_unpaid_invoices">Select All</label>
@@ -18170,7 +18176,7 @@
                 </button>
             </div>
             
-    <div class="list-scroll-container">${state.invoices.filter(i => i.status !== 'Paid' && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0)).map((inv, origIdx) => {
+    <div class="list-scroll-container">${state.invoices.filter(i => i.status !== 'Paid' && i.deleted !== true && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0)).map((inv, origIdx) => {
                         const actualIndex = state.invoices.findIndex(i => i === inv);
                         return `
                 <div class="item">
@@ -18205,7 +18211,7 @@
     </div>
 
     <div class="card">
-        <h2>Paid Invoices (${state.invoices.filter(i => i.status === 'Paid' && matchesInvoiceSearch(i) && matchesInvoiceTagFilter(i)).length})</h2>
+        <h2>Paid Invoices (${state.invoices.filter(i => i.status === 'Paid' && i.deleted !== true && matchesInvoiceSearch(i) && matchesInvoiceTagFilter(i)).length})</h2>
         
         ${state.invoices.filter(i => i.status === 'Paid' && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).length > 0 ? `
             <div class="bulk-actions">
@@ -18219,7 +18225,7 @@
                 </button>
             </div>
             
-            <div class="list-scroll-container">${state.invoices.filter(i => i.status === 'Paid' && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0)).map((inv, origIdx) => {
+            <div class="list-scroll-container">${state.invoices.filter(i => i.status === 'Paid' && i.deleted !== true && matchesInvoiceSearch(i) && matchesInvoiceFilter(i) && matchesInvoiceTagFilter(i)).sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0)).map((inv, origIdx) => {
                         const actualIndex = state.invoices.findIndex(i => i === inv);
                         return `
                 <div class="item">
@@ -18251,7 +18257,7 @@
     </div>
 
     <div class="card">
-        <h2>Receipts (${(state.receipts || []).length})</h2>
+        <h2>Receipts (${(state.receipts || []).filter(r => !(r && r.deleted === true)).length})</h2>
         <div class="card-header-buttons"><button class="btn-small" onclick="copyAllReceipts()">📋 Copy All</button></div>
         
         ${(state.receipts && state.receipts.length > 0) ? `
@@ -18266,7 +18272,7 @@
                 </button>
             </div>
             
-            <div class="list-scroll-container">${(state.receipts || []).map((receipt, idx) => `
+            <div class="list-scroll-container">${(state.receipts || []).filter(r => !(r && r.deleted === true)).map((receipt, idx) => `
                 <div class="item">
                     <div style="display: flex; gap: 12px; align-items: start;">
                         <input type="checkbox" class="checkbox-select" 
@@ -19770,12 +19776,12 @@
         }
 
         function renderUnpaid() {
-            const unpaidList = state.unpaidEntries.filter(e => !e.paid);
+            const unpaidList = state.unpaidEntries.filter(e => !e.paid && !(e && e.deleted === true));
             const unpaidTotal = unpaidList.reduce((sum, e) => sum + (e.amount || 0), 0);
             const unpaidSorted = unpaidList.slice().sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
             const unpaidShow = state.unpaidEntriesShowCount || 2;
             const unpaidVisible = unpaidSorted.slice(0, unpaidShow);
-            const paidSorted = state.unpaidEntries.filter(e => e.paid).slice().sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+            const paidSorted = state.unpaidEntries.filter(e => e.paid && !(e && e.deleted === true)).slice().sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
             const paidShow = state.paidEntriesShowCount || 2;
             const paidVisible = paidSorted.slice(0, paidShow);
 
@@ -20043,7 +20049,7 @@
                 </div>
 
                 <div class="card">
-                    <h2>All Notes (${state.notes.length})</h2>
+                    <h2>All Notes (${(state.notes || []).filter(n => !(n && n.deleted === true)).length})</h2>
                     <div class="search-box">
                         <input type="text" placeholder="🔍 Search notes..." oninput="searchNotes(this.value)" id="noteSearch">
                     </div>
@@ -20057,7 +20063,7 @@
         }
 
         function renderNotesList(searchPeriod = '') {
-            let notes = state.notes.slice().sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+            let notes = state.notes.slice().filter(n => !(n && n.deleted === true)).sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
             if (searchPeriod) {
                 const Period = searchPeriod.toLowerCase();
                 notes = notes.filter(n =>
@@ -21071,6 +21077,7 @@
                 return String(l.type || '') === filter;
             });
             filteredLoans = filterItemsByTags(filteredLoans, tagSel, false);
+            filteredLoans = filteredLoans.filter(l => !(l && l.deleted === true));
             const listHtml = filteredLoans.map((loan, index) => {
                 const paid = (loan.payments || []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
                 const remaining = Math.max(0, (Number(loan.amount) || 0) - paid);
@@ -21442,13 +21449,13 @@
             console.log(`Filtering sales from ${startDateStr} to ${todayStr} for period: ${periodLabel}`);
 
             // Filter sales in date range and calculate profit
-            const sales = (state.sales || []).filter(s => {
+            const sales = (state.sales || []).filter(s => !(s && s.deleted === true)).filter(s => {
                 if (!s.date) return false;
                 return s.date >= startDateStr && s.date <= todayStr;
             });
 
             const totalProfit = sales.reduce((sum, s) => sum + (s.profit || 0), 0);
-            const incomes = (state.income || []).filter(i => {
+            const incomes = (state.income || []).filter(i => !(i && i.deleted === true)).filter(i => {
                 if (!i.date) return false;
                 return i.date >= startDateStr && i.date <= todayStr;
             }).filter(isIncomeIncludedInTithing);
@@ -24996,9 +25003,9 @@
         };
 
         window.renderSales = function(){ const stats=getStats(); let filteredSales=state.sales.slice(); if(state.searchPeriod){ const q=state.searchPeriod.toLowerCase(); filteredSales=filteredSales.filter(s=> s.productName.toLowerCase().includes(q)|| s.customer.toLowerCase().includes(q)|| s.payment.toLowerCase().includes(q)); } if(state.filterDateFrom){ filteredSales=filteredSales.filter(s=> new Date(s.date) >= new Date(state.filterDateFrom)); } if(state.filterDateTo){ filteredSales=filteredSales.filter(s=> new Date(s.date) <= new Date(state.filterDateTo)); } if(state.filterCustomer){ filteredSales=filteredSales.filter(s=> s.customer===state.filterCustomer); } try{ filteredSales.sort((a,b)=>{ const ta=Number(a.timestamp)|| new Date(`${a.date} ${a.time}`).getTime()||0; const tb=Number(b.timestamp)|| new Date(`${b.date} ${b.time}`).getTime()||0; return tb-ta; }); }catch{} state.lastFilteredSales = filteredSales; const count=(state.listShowCount && state.listShowCount.sales)? state.listShowCount.sales:3; const items = filteredSales.slice(0,count).map((s)=> `<div class="item"><div class="item-header"><span class="item-title">${s.productName} ${(s.status==='unpaid')?'<span class=\"badge badge-danger\">Unpaid</span>':''}</span><span style="color:#2e7d32;font-weight:700;"> ${formatNumber(s.profit)} Tsh</span></div><div class="item-subtitle">${s.date} ${s.time}<br>${s.customer} | Qty: ${s.quantity} | ${s.payment}<br>Cost: ${formatNumber(s.totalCost)} | Price: ${formatNumber(s.totalPrice)}</div></div>`).join('') || '<p style="text-align:center;color:#666;">No sales found</p>'; const total = filteredSales.length; const hasMore = count < total; const moreBtn = `<div class="flex-gap" style="justify-content:center;margin:8px 0;flex-wrap:nowrap;"><button class="collapse-btn" onclick="${hasMore ? `showMoreList('sales')` : `collapseList('sales')`}"><span class="collapse-icon ${hasMore ? '' : 'expanded'}">▼</span><span>${hasMore ? 'See more' : 'Hide'}</span></button><button class="collapse-btn" onclick="showAllList('sales')"><span class="collapse-icon">▼</span><span>Show all</span></button></div>`; const historyCount = Math.max(0, filteredSales.length - 50); const historyControls = historyCount ? `<div class="flex-gap" style="justify-content:flex-end;margin:4px 0;flex-wrap:nowrap;"><button class="collapse-btn" onclick="loadSalesHistory()"><span class="collapse-icon">▼</span><span>Load history</span></button><button class="collapse-btn" onclick="collapseSalesHistory()"><span class="collapse-icon">▼</span><span>Hide</span></button><button class="collapse-btn" onclick="showAllSalesHistory()"><span class="collapse-icon">▼</span><span>Show all</span></button></div>` : ''; const historyCard = historyCount ? `<div class="card" id="salesHistoryCard"><h2>Sales History (${historyCount})</h2>${historyControls}<div id="salesHistoryContent" class="list-scroll-container"></div></div>` : ''; return `<div class="card"><h2>Recent Sales (${filteredSales.length})</h2><div class="search-box"><input type="text" placeholder="🔍 Search sales..." oninput="updateSearchPeriod(this.value)"></div><div class="list-scroll-container">${items}</div>${moreBtn}${historyCard}</div>`; };
-        window.loadSalesHistory = function(){ try { const el=document.getElementById('salesHistoryContent'); if(!el) return; const arr=(state.lastFilteredSales||state.sales||[]).slice(); if(!el.dataset.populated){ const html = arr.slice(51).map(function(s){ const statusBadge=(s.status==='unpaid')?'<span class="badge badge-danger">Unpaid</span>':''; return `<div class="item"><div class="item-header"><span class="item-title">${s.productName} ${statusBadge}</span><span style="color:#2e7d32;font-weight:700;"><span class="money-text"> ${formatNumber(s.profit)} Tsh</span></span></div><div class="item-subtitle">${s.date} ${s.time}<br>${s.customer} | Qty: ${s.quantity} | ${s.payment}<br>Cost: <span class="money-text">${formatNumber(s.totalCost)} Tsh</span> | Price: <span class="money-text">${formatNumber(s.totalPrice)} Tsh</span></div>${renderTagBadges(s)}</div>`; }).join(''); el.innerHTML = html; el.dataset.populated='1'; } el.style.display='block'; state.salesHistoryLoaded=true; } catch(e){} };
+        window.loadSalesHistory = function(){ try { const el=document.getElementById('salesHistoryContent'); if(!el) return; const arr=(state.lastFilteredSales||state.sales||[]).slice(); const arr2=arr.filter(s=> !(s && s.deleted===true)); if(!el.dataset.populated){ const html = arr2.slice(51).map(function(s){ const statusBadge=(s.status==='unpaid')?'<span class="badge badge-danger">Unpaid</span>':''; return `<div class="item"><div class="item-header"><span class="item-title">${s.productName} ${statusBadge}</span><span style="color:#2e7d32;font-weight:700;"><span class="money-text"> ${formatNumber(s.profit)} Tsh</span></span></div><div class="item-subtitle">${s.date} ${s.time}<br>${s.customer} | Qty: ${s.quantity} | ${s.payment}<br>Cost: <span class="money-text">${formatNumber(s.totalCost)} Tsh</span> | Price: <span class="money-text">${formatNumber(s.totalPrice)} Tsh</span></div>${renderTagBadges(s)}</div>`; }).join(''); el.innerHTML = html; el.dataset.populated='1'; } el.style.display='block'; state.salesHistoryLoaded=true; } catch(e){} };
         window.collapseSalesHistory = function(){ try { const el=document.getElementById('salesHistoryContent'); if(el) el.style.display='none'; state.salesHistoryLoaded=false; state.salesHistoryShowAll=false; } catch(e){} };
-        window.showAllSalesHistory = function(){ try { const el=document.getElementById('salesHistoryContent'); if(!el) return; const arr=(state.lastFilteredSales||state.sales||[]).slice(); const html = arr.slice(51).map(function(s){ const statusBadge=(s.status==='unpaid')?'<span class="badge badge-danger">Unpaid</span>':''; return `<div class="item"><div class="item-header"><span class="item-title">${s.productName} ${statusBadge}</span><span style="color:#2e7d32;font-weight:700;"><span class="money-text"> ${formatNumber(s.profit)} Tsh</span></span></div><div class="item-subtitle">${s.date} ${s.time}<br>${s.customer} | Qty: ${s.quantity} | ${s.payment}<br>Cost: <span class="money-text">${formatNumber(s.totalCost)} Tsh</span> | Price: <span class="money-text">${formatNumber(s.totalPrice)} Tsh</span></div>${renderTagBadges(s)}</div>`; }).join(''); el.innerHTML = html; el.dataset.populated='1'; el.style.display='block'; state.salesHistoryShowAll=true; } catch(e){} };
+        window.showAllSalesHistory = function(){ try { const el=document.getElementById('salesHistoryContent'); if(!el) return; const arr=(state.lastFilteredSales||state.sales||[]).slice(); const arr2=arr.filter(s=> !(s && s.deleted===true)); const html = arr2.slice(51).map(function(s){ const statusBadge=(s.status==='unpaid')?'<span class="badge badge-danger">Unpaid</span>':''; return `<div class="item"><div class="item-header"><span class="item-title">${s.productName} ${statusBadge}</span><span style="color:#2e7d32;font-weight:700;"><span class="money-text"> ${formatNumber(s.profit)} Tsh</span></span></div><div class="item-subtitle">${s.date} ${s.time}<br>${s.customer} | Qty: ${s.quantity} | ${s.payment}<br>Cost: <span class="money-text">${formatNumber(s.totalCost)} Tsh</span> | Price: <span class="money-text">${formatNumber(s.totalPrice)} Tsh</span></div>${renderTagBadges(s)}</div>`; }).join(''); el.innerHTML = html; el.dataset.populated='1'; el.style.display='block'; state.salesHistoryShowAll=true; } catch(e){} };
 
         window.setupSalesHistoryCollapsed = function(){ try { const card=document.getElementById('salesHistoryCard'); if(!card) return; const h2=card.querySelector('h2'); if(h2 && !document.getElementById('salesHistoryControls')){ const controls=document.createElement('div'); controls.id='salesHistoryControls'; controls.className='flex-gap'; controls.style.cssText='justify-content:center;margin:8px 0;flex-wrap:nowrap;'; controls.innerHTML = `<button class="collapse-btn" onclick="loadSalesHistory()" title="▼See more"><span class="collapse-icon">▼</span><span>See more</span></button><button class="collapse-btn" onclick="showAllSalesHistory()" title="▼Show all"><span class="collapse-icon">▼</span><span>Show all</span></button><button class="collapse-btn" onclick="collapseSalesHistory()" title="▼Hide"><span class="collapse-icon">▼</span><span>Hide</span></button>`; h2.parentNode.insertBefore(controls, h2.nextSibling); }
             let content=card.querySelector('#salesHistoryContent'); if(!content){ content=document.createElement('div'); content.id='salesHistoryContent'; content.classList.add('list-scroll-container'); content.style.display='none'; card.appendChild(content); } else { try { content.classList.add('list-scroll-container'); } catch {} }
