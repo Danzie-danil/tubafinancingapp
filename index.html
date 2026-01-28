@@ -20548,7 +20548,7 @@
         }
 
         function renderAssets() {
-            const assets = (state.assets || []).slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const assets = (state.assets || []).filter(a => !(a && a.deleted === true)).slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             const listHtml = assets.map((a, i) => {
                 const editing = (state.inlineEditAssets && state.inlineEditAssets[a.timestamp]);
                 return `
@@ -20791,8 +20791,8 @@
         }
 
         function renderMaintenance() {
-            const assets = state.assets || [];
-            const maint = (state.maintenance || []).slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const assets = (state.assets || []).filter(a => !(a && a.deleted === true));
+            const maint = (state.maintenance || []).filter(m => !(m && m.deleted === true)).slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             const listHtml = maint.map((m, i) => {
                 const editing = (state.inlineEditMaintenance && state.inlineEditMaintenance[m.timestamp]);
                 const optionsInline = assets.length
@@ -27330,6 +27330,7 @@
         </div>
     </div>
     
+    <script src="js/main.js" type="module"></script>
 </body>
 
 </html>
