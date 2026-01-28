@@ -674,7 +674,10 @@
           started=true; cloudSyncStart();
           const keys=this.buildDeleteKeys(item.table, item.keySource);
           const payload={ ...keys, deleted: true, user_id: window.currentUser.id };
-          const { error } = await supabase.from(item.table).upsert(payload);
+          const conflict=window.conflictTargets && window.conflictTargets[item.table];
+          const { error } = conflict
+            ? await supabase.from(item.table).upsert(payload, { onConflict: conflict })
+            : await supabase.from(item.table).upsert(payload);
           if (error) throw error;
           this.items=this.items.filter(q=>q.id!==item.id);
           this.save();
@@ -701,6 +704,15 @@
   window.__tubaCloudSync = window.__tubaCloudSync || { inFlight: 0, endTimer: null };
   function cloudSyncStart(){ try { if (!window.syncEnabled || !window.currentUser) return; window.__tubaCloudSync.inFlight = (window.__tubaCloudSync.inFlight || 0) + 1; if (window.__tubaCloudSync.endTimer) { try { clearTimeout(window.__tubaCloudSync.endTimer); } catch {} window.__tubaCloudSync.endTimer = null; } try { updateSyncIndicator && updateSyncIndicator('syncing'); } catch {} } catch {} }
   function cloudSyncEnd(){ try { if (!window.syncEnabled || !window.currentUser) return; window.__tubaCloudSync.inFlight = Math.max(0, (window.__tubaCloudSync.inFlight || 0) - 1); if ((window.__tubaCloudSync.inFlight || 0) === 0) { window.__tubaCloudSync.endTimer = setTimeout(()=>{ try { if (window.syncEnabled && window.currentUser) { updateSyncIndicator && updateSyncIndicator('synced'); } } catch {} }, 350); } } catch {} }
+
+  async function persistLocalTombstone(table, keySource){
+    try {
+      if (!window.tubaDB) return;
+      const keys = deleteQueue.buildDeleteKeys(table, keySource || {});
+      const payload = { ...keys, deleted: true, last_updated: Date.now() };
+      await window.tubaDB.put(table, payload);
+    } catch {}
+  }
 
   function markLocalItemDeleted(table, keySource){
     try {
@@ -806,20 +818,7 @@
     if (!window.syncEnabled || !window.currentUser){
       try { deleteQueue.enqueue(table,keySource); } catch {}
       try { markLocalItemDeleted(table, keySource); } catch {}
-      try {
-        if (window.tubaDB) {
-          let idKey = null;
-          switch(table){
-            case 'sales': idKey = (keySource && (keySource.id || `S-${keySource.timestamp}`)); break;
-            case 'expenses': idKey = (keySource && (keySource.id || `E-${keySource.timestamp}`)); break;
-            case 'invoices': idKey = (keySource && keySource.number); break;
-            case 'receipts': idKey = (keySource && (keySource.id || keySource.timestamp)); break;
-            case 'products': idKey = (keySource && (`P-${String(keySource.name||'')}`)); break;
-            default: idKey = (keySource && (keySource.id || keySource.timestamp));
-          }
-          if (idKey) { await window.tubaDB.softDelete(table, idKey); }
-        }
-      } catch {}
+      try { await persistLocalTombstone(table, keySource); } catch {}
       try { maybeSendDeleteReminder(); } catch {}
       return;
     }
@@ -829,23 +828,13 @@
       cloudSyncStart();
       const keys=deleteQueue.buildDeleteKeys(table, keySource);
       const payload={ ...keys, deleted: true, user_id: window.currentUser.id };
-      const { error } = await supabase.from(table).upsert(payload);
+      const conflict=window.conflictTargets && window.conflictTargets[table];
+      const { error } = conflict
+        ? await supabase.from(table).upsert(payload, { onConflict: conflict })
+        : await supabase.from(table).upsert(payload);
       if (error) throw error;
       try { markLocalItemDeleted(table, keySource); } catch {}
-      try {
-        if (window.tubaDB) {
-          let idKey = null;
-          switch(table){
-            case 'sales': idKey = (keySource && (keySource.id || `S-${keySource.timestamp}`)); break;
-            case 'expenses': idKey = (keySource && (keySource.id || `E-${keySource.timestamp}`)); break;
-            case 'invoices': idKey = (keySource && keySource.number); break;
-            case 'receipts': idKey = (keySource && (keySource.id || keySource.timestamp)); break;
-            case 'products': idKey = (keySource && (`P-${String(keySource.name||'')}`)); break;
-            default: idKey = (keySource && (keySource.id || keySource.timestamp));
-          }
-          if (idKey) { await window.tubaDB.softDelete(table, idKey); }
-        }
-      } catch {}
+      try { await persistLocalTombstone(table, keySource); } catch {}
       auditLog('delete', table, keySource, null);
       try { showToast && showToast('Item deleted successfully','success'); } catch {}
       try { maybeSendDeleteReminder(); } catch {}
@@ -1175,7 +1164,7 @@
       const [ productsRes, salesRes, categoriesRes, expensesRes, incomeRes, customersRes, invoicesRes, receiptsRes, inventoryRes, notesRes, assetsRes, maintenanceRes, transactionsRes, unpaidRes, floatsRes, settingsRes, periodsRes, auditLogsRes, purchasesRes, loansRes, loanPaymentsRes, tithingRes, tagsRes ] = await Promise.all([
         fetch('products','name,category,cost,price,has_stock,sale_unit,purchase_unit,units_per_purchase,tags,deleted'),
         supabase.from('sales').select('date,time,timestamp,product_name,customer,quantity,cost_per_unit,price_per_unit,total_cost,total_price,profit,payment,status,category,has_stock,tags,deleted').eq('user_id', uid).order('timestamp',{ascending:false}),
-        fetch('categories','name,kind'),
+        fetch('categories','name,kind,deleted'),
         fetch('expenses','id,date,time,timestamp,description,category,amount,payment,comment,tags,deleted'),
         fetch('income','date,time,timestamp,source,amount,payment,comment,as_capital,include_in_tithing,deleted'),
         fetch('customers','name,email,phone,address,total_purchases,tags,deleted'),
@@ -1189,20 +1178,29 @@
         fetch('unpaid_entries','name,type,amount,date,time,timestamp,paid,tags,deleted'),
         fetch('transaction_floats','channel,initial_account_float,initial_cash_float'),
         supabase.from('settings').select('daily_target,monthly_target,currency_code,currency_symbol,default_tax_rate,cogs_method,pin_hash,pin_updated_at').eq('user_id', uid).single(),
-        fetch('inventory_purchase_periods','period_number,title,start_date,end_date,notes'),
+        fetch('inventory_purchase_periods','period_number,title,start_date,end_date,notes,deleted'),
         supabase.from('audit_logs').select('action,table_name,item_key,timestamp,created_at').eq('user_id', uid).order('timestamp',{ascending:false}).limit(50),
         fetch('inventory_purchases','period_number,item_name,quantity,unit_cost,total_cost,purchase_date,supplier_name,supplier_phone,supplier_address,notes,timestamp,purchase_unit,units_per_purchase,deleted'),
         fetch('loans','name,type,amount,date,notes,timestamp,money_source,deleted'),
         fetch('loan_payments','loan_timestamp,amount,date,timestamp,source,destination,deleted'),
         fetch('tithing','month_key,base,due,paid,history,updated_at,deleted'),
-        fetch('tags','tag_name,color') ]);
+        fetch('tags','tag_name,color,deleted') ]);
       const products=(productsRes.data||[]); if (products.length){ const mapped=products.map(p=>({ id:`P-${(p.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_')}`, name:p.name, category:p.category, cost:parseFloat(p.cost), price:parseFloat(p.price), hasStock:(p.has_stock===false)?false:true, saleUnit: p.sale_unit||'', purchaseUnit: p.purchase_unit||'', unitsPerPurchase: (p.units_per_purchase!=null?Number(p.units_per_purchase):null), tags:(typeof p.tags==='string'&&p.tags?p.tags.split(',').map(t=>t.trim()).filter(Boolean):[]), deleted: p.deleted===true })); const tomb=mapped.filter(x=>x.deleted===true); const norm=mapped.filter(x=>x.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('products', { ...it, deleted: true }); } catch {} state.products = (state.products||[]).filter(local => !(local && local.name===it.name && String(local.category||'')===String(it.category||''))); } } state.products = deduplicateByContent([...(state.products||[]), ...norm], 'products'); }
       const sales=(salesRes.data||[]); if (sales.length){ const mapped=sales.map(s=>({ id:`S-${s.timestamp}`, date:s.date, time:s.time, timestamp:s.timestamp, productName:s.product_name, customer:s.customer, quantity:s.quantity, costPerUnit:parseFloat(s.cost_per_unit), pricePerUnit:parseFloat(s.price_per_unit), totalCost:parseFloat(s.total_cost), totalPrice:parseFloat(s.total_price), profit:parseFloat(s.profit), payment:s.payment, status:s.status||'paid', category:s.category||'', hasStock:(s.has_stock===false?false:true), tags:(typeof s.tags==='string'&&s.tags?s.tags.split(',').map(t=>t.trim()).filter(Boolean):[]), deleted: s.deleted===true })); const tomb=mapped.filter(x=>x.deleted===true); const norm=mapped.filter(x=>x.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('sales', { ...it, deleted: true }); } catch {} state.sales = (state.sales||[]).filter(local => (local && local.id)!==it.id); } } state.sales = deduplicateByContent([...(state.sales||[]), ...norm], 'sales'); }
       const categories=(categoriesRes.data||[]); if (categories.length){
-        const cloudCategories=categories.map(c=>(c.name||'').trim()).filter(Boolean);
+        const tomb=categories.filter(c=>c.deleted===true);
+        const norm=categories.filter(c=>c.deleted!==true);
+        if (tomb.length && window.tubaDB){
+          for (const it of tomb){
+            try { await window.tubaDB.put('categories', { ...it, deleted: true }); } catch {}
+            const nm=(it.name||'').trim();
+            if (nm){ state.categories = (state.categories||[]).filter(x => x !== nm); if (state.categoryKinds && state.categoryKinds[nm]) delete state.categoryKinds[nm]; }
+          }
+        }
+        const cloudCategories=norm.map(c=>(c.name||'').trim()).filter(Boolean);
         state.categories = Array.from(new Set([...(state.categories||[]), ...cloudCategories]));
         state.categoryKinds = state.categoryKinds || {};
-        categories.forEach(c => { const nm=(c.name||'').trim(); if (nm && c.kind) state.categoryKinds[nm] = c.kind; });
+        norm.forEach(c => { const nm=(c.name||'').trim(); if (nm && c.kind) state.categoryKinds[nm] = c.kind; });
       }
       const expenses=(expensesRes.data||[]); if (expenses.length){ const mapped=expenses.map(e=>({ id:e.id || `E-${e.timestamp}`, date:e.date, time:e.time, timestamp:e.timestamp, description:e.description, category:e.category, amount:parseFloat(e.amount), payment:e.payment, comment:e.comment, tags:(typeof e.tags==='string'&&e.tags?e.tags.split(',').map(t=>t.trim()).filter(Boolean):[]), deleted: e.deleted===true })); const tomb=mapped.filter(x=>x.deleted===true); const norm=mapped.filter(x=>x.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('expenses', { ...it, deleted: true }); } catch {} state.expenses = (state.expenses||[]).filter(local => (local && (local.id||local.timestamp))!==(it.id||it.timestamp)); } } state.expenses = deduplicateByContent([...(state.expenses||[]), ...norm], 'expenses'); }
       const income=(incomeRes.data||[]); if (income.length){ const mapped=income.map(i=>({ id:`I-${i.timestamp}`, date:i.date, time:i.time, timestamp:i.timestamp, source:i.source, amount:parseFloat(i.amount), payment:i.payment, comment:i.comment, asCapital: i.as_capital === true, includeTithing: i.include_in_tithing !== false, deleted: i.deleted===true })); const tomb=mapped.filter(x=>x.deleted===true); const norm=mapped.filter(x=>x.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('income', { ...it, deleted: true }); } catch {} state.income = (state.income||[]).filter(local => (local && local.id)!==it.id); } } state.income = deduplicateByContent([...(state.income||[]), ...norm], 'income'); }
@@ -1212,8 +1210,23 @@
       const inventory=(inventoryRes.data||[]); if (inventory.length){ inventory.forEach(row=>{ const name=row.product_name; if (row.deleted===true){ if (window.tubaDB){ try { window.tubaDB.put('inventory', { ...row, deleted: true }); } catch {} } if (state.inventory && state.inventory[name]) delete state.inventory[name]; return; } const inv=state.inventory[name] || { stock:0, minAlert:5 }; inv.stock = row.stock || 0; inv.minAlert = row.min_alert || inv.minAlert; state.inventory[name] = inv; }); }
       const notes=(notesRes.data||[]); if (notes.length){ const mapped=notes.map(n=>({ title:n.title, content:n.content, date:n.date, time:n.time, timestamp:n.timestamp, tags: (typeof n.tags==='string' && n.tags ? n.tags.split(',').map(t=>t.trim()).filter(Boolean) : (Array.isArray(n.tags)? n.tags : []) ), deleted: n.deleted===true })); const tomb=mapped.filter(x=>x.deleted===true); const norm=mapped.filter(x=>x.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('notes', { ...it, deleted: true }); } catch {} state.notes = (state.notes||[]).filter(local => (local && local.timestamp)!==it.timestamp); } } state.notes = deduplicateByContent([...(state.notes||[]), ...norm], 'notes'); }
       const assets=(assetsRes.data||[]); if (assets.length){ const mapped=assets.map(a=>({ name:a.name, purchaseDate:a.purchase_date, time:a.time, timestamp:a.timestamp, cost:parseFloat(a.cost)||0, description:a.description||'', moneySource: a.money_source || 'business', deleted: a.deleted===true })); const tomb=mapped.filter(x=>x.deleted===true); const norm=mapped.filter(x=>x.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('assets', { ...it, deleted: true }); } catch {} state.assets = (state.assets||[]).filter(local => (local && local.timestamp)!==it.timestamp); } } state.assets = deduplicateByContent([...(state.assets||[]), ...norm], 'assets'); }
-      const loansCloud = (loansRes.data || []).map(l => ({ id: l.timestamp, timestamp: l.timestamp, name: l.name, type: l.type, amount: parseFloat(l.amount)||0, date: l.date, notes: l.notes||'', moneySource: l.money_source || null, payments: [] }));
-      const loanPaymentsCloud = (loanPaymentsRes.data || []).map(p => ({ loan_timestamp: p.loan_timestamp, amount: parseFloat(p.amount)||0, date: p.date, timestamp: p.timestamp, source: p.source || null, destination: p.destination || null }));
+      const loansAll = (loansRes.data || []);
+      const deletedLoans = loansAll.filter(l => l.deleted === true);
+      if (deletedLoans.length && window.tubaDB){
+        for (const it of deletedLoans){
+          try { await window.tubaDB.put('loans', { ...it, deleted: true }); } catch {}
+          state.loans = (state.loans || []).filter(x => (x && (x.timestamp || x.id)) !== it.timestamp);
+        }
+      }
+      const loansCloud = loansAll.filter(l => l.deleted !== true).map(l => ({ id: l.timestamp, timestamp: l.timestamp, name: l.name, type: l.type, amount: parseFloat(l.amount)||0, date: l.date, notes: l.notes||'', moneySource: l.money_source || null, payments: [] }));
+      const loanPaysAll = (loanPaymentsRes.data || []);
+      const deletedLoanPays = loanPaysAll.filter(p => p.deleted === true);
+      if (deletedLoanPays.length && window.tubaDB){
+        for (const it of deletedLoanPays){
+          try { await window.tubaDB.put('loan_payments', { ...it, deleted: true }); } catch {}
+        }
+      }
+      const loanPaymentsCloud = loanPaysAll.filter(p => p.deleted !== true).map(p => ({ loan_timestamp: p.loan_timestamp, amount: parseFloat(p.amount)||0, date: p.date, timestamp: p.timestamp, source: p.source || null, destination: p.destination || null }));
       if (loansCloud.length){
         const byTs = new Map(loansCloud.map(l => [l.timestamp, l]));
         loanPaymentsCloud.forEach(p => { const host = byTs.get(p.loan_timestamp); if (host) { host.payments = host.payments || []; host.payments.push({ amount: p.amount, date: p.date, timestamp: p.timestamp, source: p.source, destination: p.destination }); } });
@@ -1239,7 +1252,15 @@
       const settings=(settingsRes.data||{}); if (settings && Object.keys(settings).length){ state.dailyTarget=settings.daily_target||state.dailyTarget; state.monthlyTarget=settings.monthly_target||state.monthlyTarget; state.currencyCode=settings.currency_code||state.currencyCode; state.currencySymbol=settings.currency_symbol||state.currencySymbol; state.defaultTaxRate=settings.default_tax_rate||state.defaultTaxRate; state.cogsMethod=settings.cogs_method||state.cogsMethod; state.securityPinHash = settings.pin_hash || null; state.securityPinUpdatedAt = settings.pin_updated_at || null; }
       const periods=(periodsRes.data||[]);
       if (periods.length){
-        const cycles = periods.map(c=>({ id:`CYC-${c.period_number}`, number:c.period_number, title:c.title||'', startDate:c.start_date||'', endDate:c.end_date||'', notes:c.notes||'' }));
+        const tomb=periods.filter(c=>c.deleted===true);
+        const norm=periods.filter(c=>c.deleted!==true);
+        if (tomb.length && window.tubaDB){
+          for (const it of tomb){
+            try { await window.tubaDB.put('inventory_purchase_periods', { ...it, deleted: true }); } catch {}
+            state.inventoryPurchaseCycles = (state.inventoryPurchaseCycles || []).filter(x => (x && x.number) !== it.period_number);
+          }
+        }
+        const cycles = norm.map(c=>({ id:`CYC-${c.period_number}`, number:c.period_number, title:c.title||'', startDate:c.start_date||'', endDate:c.end_date||'', notes:c.notes||'' }));
         state.inventoryPurchaseCycles = cycles;
       }
       const audits=(auditLogsRes.data||[]); if (audits.length){ state.auditLogs = audits; }
@@ -1274,7 +1295,7 @@
           : norm;
       }
       const tithingCloud=(tithingRes.data||[]); if (tithingCloud.length){ state.tithingRecords = state.tithingRecords || {}; tithingCloud.forEach(r=>{ const mk=String(r.month_key); if (r.deleted===true){ if (window.tubaDB){ try { window.tubaDB.put('tithing', { ...r, deleted: true }); } catch {} } if (state.tithingRecords[mk]) delete state.tithingRecords[mk]; return; } state.tithingRecords[mk] = { monthKey: mk, base: r.base || 0, due: r.due || 0, paid: r.paid || 0, history: r.history || [], updated_at: r.updated_at || new Date().toISOString() }; }); }
-      const tagsCloud=(tagsRes.data||[]); if (tagsCloud.length){ const names=tagsCloud.map(r=>String(r.tag_name||'').toLowerCase()).filter(Boolean); const unique=Array.from(new Set([...(state.tags||[]), ...names])); state.tags = unique; state.tagColors = state.tagColors || {}; tagsCloud.forEach(r=>{ const n=String(r.tag_name||'').toLowerCase(); if (!n) return; const col = r.color || '#999999'; if (!state.tagColors[n]) state.tagColors[n] = col; }); }
+      const tagsCloud=(tagsRes.data||[]); if (tagsCloud.length){ const tomb=tagsCloud.filter(r=>r.deleted===true); const norm=tagsCloud.filter(r=>r.deleted!==true); if (tomb.length && window.tubaDB){ for (const it of tomb){ try { await window.tubaDB.put('tags', { ...it, deleted: true }); } catch {} const n=String(it.tag_name||'').toLowerCase(); if (n){ state.tags = (state.tags||[]).filter(t => t !== n); if (state.tagColors && state.tagColors[n]) delete state.tagColors[n]; } } } const names=norm.map(r=>String(r.tag_name||'').toLowerCase()).filter(Boolean); const unique=Array.from(new Set([...(state.tags||[]), ...names])); state.tags = unique; state.tagColors = state.tagColors || {}; norm.forEach(r=>{ const n=String(r.tag_name||'').toLowerCase(); if (!n) return; const col = r.color || '#999999'; if (!state.tagColors[n]) state.tagColors[n] = col; }); }
       try { saveData && saveData(); render && render(); } catch {}
     } catch (error) { console.error('Pull data error:', error); } finally { cloudSyncEnd(); }
   }
