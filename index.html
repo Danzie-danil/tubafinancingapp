@@ -3290,6 +3290,7 @@
     </script>
     <script>window.__deferAuthUntilUiReady = true;</script>
     <script src="app.js?v=4" defer></script>
+    <script type="module" src="main.js?v=1"></script>
 </head>
 
 <body>
@@ -6321,6 +6322,7 @@
             , inlineLoanEdit: {}
         };
 
+        window.state = state;
         let chartInstance = null;
         let cachedStats = null;
         let lastStatsUpdate = 0;
@@ -7158,6 +7160,7 @@
                 console.error('Error saving data:', e);
                 showToast('Error saving data!', 'error');
             }
+            try { globalThis.__stateBus && globalThis.__stateBus.notify({ type: 'save', payload: state }); } catch {}
             try {
                 if (window.storageManager) {
                     window.storageManager.saveCollectionsFromState(state);
