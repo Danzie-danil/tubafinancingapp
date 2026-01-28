@@ -1,0 +1,16 @@
+# Ignore real env files
+.env
+.env.local
+.env.*.local
+
+# Allow templates
+!.env.example
+!.env.sandbox.example
+!.env.production.example
+
+# Common ignores
+node_modules/
+.vercel/
+.DS_Store
+dist/
+build/

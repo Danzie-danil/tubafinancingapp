@@ -1,0 +1,9 @@
+{
+  "name": "tuba-finances",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "web-push": "^3.6.0",
+    "@supabase/supabase-js": "^2.39.6"
+  }
+}

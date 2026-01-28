@@ -1,0 +1,991 @@
+{
+  "products": [
+    {
+      "id": "P-nataraj_pens",
+      "name": "Nataraj Pens",
+      "category": "PENS AND PENCILS",
+      "cost": 300,
+      "price": 1000,
+      "hasStock": true
+    },
+    {
+      "id": "P-sticky_notes",
+      "name": "Sticky Notes",
+      "category": "NOTEBOOKS & DIARIES",
+      "cost": 500,
+      "price": 1500,
+      "hasStock": true
+    },
+    {
+      "id": "P-quire_04",
+      "name": "Quire 04",
+      "category": "COUNTERS",
+      "cost": 2000,
+      "price": 4000,
+      "hasStock": true
+    },
+    {
+      "id": "P-quire_03",
+      "name": "Quire 03",
+      "category": "COUNTERS",
+      "cost": 2000,
+      "price": 3000,
+      "hasStock": true
+    },
+    {
+      "id": "P-quire_02",
+      "name": "Quire 02",
+      "category": "COUNTERS",
+      "cost": 1000,
+      "price": 2500,
+      "hasStock": true
+    },
+    {
+      "id": "P-passport_size",
+      "name": "Passport size",
+      "category": "PASSPORT",
+      "cost": 500,
+      "price": 2000,
+      "hasStock": false
+    },
+    {
+      "id": "P-printing_b_w",
+      "name": "Printing B/W",
+      "category": "Printing",
+      "cost": 150,
+      "price": 500,
+      "hasStock": false
+    },
+    {
+      "id": "P-bahasha_a4",
+      "name": "Bahasha A4",
+      "category": "BAHASHA",
+      "cost": 100,
+      "price": 300,
+      "hasStock": true
+    },
+    {
+      "id": "P-copy_b_w",
+      "name": "Copy B/W",
+      "category": "COPY",
+      "cost": 50,
+      "price": 200,
+      "hasStock": false
+    },
+    {
+      "id": "P-printing_c_l",
+      "name": "Printing C/L",
+      "category": "Printing",
+      "cost": 200,
+      "price": 1000,
+      "hasStock": false
+    },
+    {
+      "id": "P-copy_c_l_1",
+      "name": "Copy C/L 1",
+      "category": "Printing",
+      "cost": 50,
+      "price": 300,
+      "hasStock": false
+    },
+    {
+      "id": "P-online_01",
+      "name": "Online 01",
+      "category": "ONLINE",
+      "cost": 500,
+      "price": 3000,
+      "hasStock": false
+    },
+    {
+      "id": "P-nataraj_pencils",
+      "name": "Nataraj pencils",
+      "category": "PENS AND PENCILS",
+      "cost": 50,
+      "price": 300,
+      "hasStock": true
+    },
+    {
+      "id": "P-printing_cards",
+      "name": "Printing Cards",
+      "category": "Printing",
+      "cost": 100,
+      "price": 500,
+      "hasStock": false
+    }
+  ],
+  "sales": [
+    {
+      "id": "S-1764593809167",
+      "date": "2025-12-01",
+      "time": "15:56:49",
+      "timestamp": 1764593809167,
+      "productName": "Printing C/L",
+      "customer": "WALK IN",
+      "quantity": 2,
+      "costPerUnit": 200,
+      "pricePerUnit": 1000,
+      "totalCost": 400,
+      "totalPrice": 2000,
+      "profit": 1600,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764584760345",
+      "date": "2025-12-01",
+      "time": "13:26:00",
+      "timestamp": 1764584760345,
+      "productName": "Printing C/L",
+      "customer": "WALK IN",
+      "quantity": 2,
+      "costPerUnit": 200,
+      "pricePerUnit": 1000,
+      "totalCost": 400,
+      "totalPrice": 2000,
+      "profit": 1600,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764577193754",
+      "date": "2025-12-01",
+      "time": "11:19:53",
+      "timestamp": 1764577193754,
+      "productName": "Bahasha A4",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 100,
+      "pricePerUnit": 300,
+      "totalCost": 100,
+      "totalPrice": 300,
+      "profit": 200,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764321942877",
+      "date": "2025-11-28",
+      "time": "12:25:42",
+      "timestamp": 1764321942877,
+      "productName": "Online 01",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 3000,
+      "totalCost": 500,
+      "totalPrice": 3000,
+      "profit": 2500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764321866990",
+      "date": "2025-11-28",
+      "time": "12:24:26",
+      "timestamp": 1764321866990,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 150,
+      "totalPrice": 500,
+      "profit": 350,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764185246152",
+      "date": "2025-11-26",
+      "time": "22:27:26",
+      "timestamp": 1764185246152,
+      "productName": "Online 01",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 3000,
+      "totalCost": 500,
+      "totalPrice": 3000,
+      "profit": 2500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764154315278",
+      "date": "2025-11-26",
+      "time": "1:51:55 PM",
+      "timestamp": 1764154315278,
+      "productName": "Copy B/W",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 50,
+      "pricePerUnit": 200,
+      "totalCost": 50,
+      "totalPrice": 200,
+      "profit": 150,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764117348334",
+      "date": "2025-11-26",
+      "time": "03:35:48",
+      "timestamp": 1764117348334,
+      "productName": "Copy B/W",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 50,
+      "pricePerUnit": 200,
+      "totalCost": 50,
+      "totalPrice": 200,
+      "profit": 150,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1764008120251",
+      "date": "2025-11-24",
+      "time": "21:15:20",
+      "timestamp": 1764008120251,
+      "productName": "Copy B/W",
+      "customer": "WALK IN",
+      "quantity": 20,
+      "costPerUnit": 50,
+      "pricePerUnit": 100,
+      "totalCost": 1000,
+      "totalPrice": 2000,
+      "profit": 1000,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763996880536",
+      "date": "2025-11-24",
+      "time": "6:08:00 PM",
+      "timestamp": 1763996880536,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 3,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 450,
+      "totalPrice": 1500,
+      "profit": 1050,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763995725916",
+      "date": "2025-11-24",
+      "time": "5:48:45 PM",
+      "timestamp": 1763995725916,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763995319641",
+      "date": "2025-11-24",
+      "time": "17:41:59",
+      "timestamp": 1763995319641,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763992464272",
+      "date": "2025-11-24",
+      "time": "4:54:24 PM",
+      "timestamp": 1763992464272,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763986423648",
+      "date": "2025-11-24",
+      "time": "3:13:43 PM",
+      "timestamp": 1763986423648,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763981773150",
+      "date": "2025-11-24",
+      "time": "1:56:13 PM",
+      "timestamp": 1763981773150,
+      "productName": "Printing C/L",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 200,
+      "pricePerUnit": 700,
+      "totalCost": 200,
+      "totalPrice": 700,
+      "profit": 500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763974454762",
+      "date": "2025-11-24",
+      "time": "11:54:14 AM",
+      "timestamp": 1763974454762,
+      "productName": "Printing C/L",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 200,
+      "pricePerUnit": 1000,
+      "totalCost": 200,
+      "totalPrice": 1000,
+      "profit": 800,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763974398786",
+      "date": "2025-11-24",
+      "time": "11:53:18 AM",
+      "timestamp": 1763974398786,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763972468991",
+      "date": "2025-11-24",
+      "time": "11:21:08 AM",
+      "timestamp": 1763972468991,
+      "productName": "Copy B/W",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 50,
+      "pricePerUnit": 200,
+      "totalCost": 50,
+      "totalPrice": 200,
+      "profit": 150,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763971082438",
+      "date": "2025-11-24",
+      "time": "10:58:02 AM",
+      "timestamp": 1763971082438,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 8,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 1200,
+      "totalPrice": 4000,
+      "profit": 2800,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763968316043",
+      "date": "2025-11-24",
+      "time": "10:11:56 AM",
+      "timestamp": 1763968316043,
+      "productName": "Bahasha A4",
+      "customer": "WALK IN",
+      "quantity": 2,
+      "costPerUnit": 100,
+      "pricePerUnit": 300,
+      "totalCost": 200,
+      "totalPrice": 600,
+      "profit": 400,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763968235365",
+      "date": "2025-11-24",
+      "time": "10:10:35 AM",
+      "timestamp": 1763968235365,
+      "productName": "Bahasha A4",
+      "customer": "WALK IN",
+      "quantity": 2,
+      "costPerUnit": 160,
+      "pricePerUnit": 300,
+      "totalCost": 320,
+      "totalPrice": 600,
+      "profit": 280,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763967598362",
+      "date": "2025-11-24",
+      "time": "9:59:58 AM",
+      "timestamp": 1763967598362,
+      "productName": "Copy B/W",
+      "customer": "WALK IN",
+      "quantity": 13,
+      "costPerUnit": 50,
+      "pricePerUnit": 200,
+      "totalCost": 650,
+      "totalPrice": 2600,
+      "profit": 1950,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763967545131",
+      "date": "2025-11-24",
+      "time": "9:59:05 AM",
+      "timestamp": 1763967545131,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763915759556",
+      "date": "2025-11-23",
+      "time": "7:35:59 PM",
+      "timestamp": 1763915759556,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 3,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 450,
+      "totalPrice": 1500,
+      "profit": 1050,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763914771871",
+      "date": "2025-11-23",
+      "time": "7:19:31 PM",
+      "timestamp": 1763914771871,
+      "productName": "Printing Cards",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 100,
+      "pricePerUnit": 500,
+      "totalCost": 100,
+      "totalPrice": 500,
+      "profit": 400,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763882560851",
+      "date": "2025-11-23",
+      "time": "10:22:40",
+      "timestamp": 1763882560851,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 500,
+      "totalPrice": 2000,
+      "profit": 1500,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763880408024",
+      "date": "2025-11-23",
+      "time": "9:46:48 AM",
+      "timestamp": 1763880408024,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 1,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 150,
+      "totalPrice": 500,
+      "profit": 350,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763703220358",
+      "date": "2025-11-21",
+      "time": "8:33:40 AM",
+      "timestamp": 1763703220358,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 16,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 2400,
+      "totalPrice": 8000,
+      "profit": 5600,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763567463697",
+      "date": "2025-11-19",
+      "time": "6:51:03 PM",
+      "timestamp": 1763567463697,
+      "productName": "Bahasha A4",
+      "customer": "WALK IN",
+      "quantity": 2,
+      "costPerUnit": 160,
+      "pricePerUnit": 300,
+      "totalCost": 320,
+      "totalPrice": 600,
+      "profit": 280,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763567343307",
+      "date": "2025-11-19",
+      "time": "6:49:03 PM",
+      "timestamp": 1763567343307,
+      "productName": "Printing B/W",
+      "customer": "WALK IN",
+      "quantity": 8,
+      "costPerUnit": 150,
+      "pricePerUnit": 500,
+      "totalCost": 1200,
+      "totalPrice": 4000,
+      "profit": 2800,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763567258012",
+      "date": "2025-11-19",
+      "time": "6:47:38 PM",
+      "timestamp": 1763567258012,
+      "productName": "Printing Cards",
+      "customer": "WALK IN",
+      "quantity": 15,
+      "costPerUnit": 100,
+      "pricePerUnit": 667,
+      "totalCost": 1500,
+      "totalPrice": 10005,
+      "profit": 8505,
+      "payment": "Cash"
+    },
+    {
+      "id": "S-1763567032263",
+      "date": "2025-11-19",
+      "time": "6:43:52 PM",
+      "timestamp": 1763567032263,
+      "productName": "Passport size",
+      "customer": "WALK IN",
+      "quantity": 3,
+      "costPerUnit": 500,
+      "pricePerUnit": 2000,
+      "totalCost": 1500,
+      "totalPrice": 6000,
+      "profit": 4500,
+      "payment": "Cash"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "E-1764316012311",
+      "date": "2025-11-28",
+      "time": "10:46:52",
+      "timestamp": 1764316012311,
+      "description": "Office Construction",
+      "category": "Miscellaneous",
+      "amount": 712000,
+      "payment": "Cash",
+      "comment": "Fundi Shelf"
+    },
+    {
+      "id": "E-1764365768205",
+      "date": "2025-11-29",
+      "time": "00:36:08",
+      "timestamp": 1764365768205,
+      "description": "Trae Subscription",
+      "category": "Miscellaneous",
+      "amount": 32700,
+      "payment": "Mobile Money",
+      "comment": ""
+    },
+    {
+      "id": "E-1764409480122",
+      "date": "2025-11-29",
+      "time": "12:44:40",
+      "timestamp": 1764409480122,
+      "description": "Food",
+      "category": "Food Expenses",
+      "amount": 13500,
+      "payment": "Cash",
+      "comment": ""
+    },
+    {
+      "id": "E-1764409504915",
+      "date": "2025-11-29",
+      "time": "12:45:04",
+      "timestamp": 1764409504915,
+      "description": "Fuel",
+      "category": "Transportation",
+      "amount": 5000,
+      "payment": "Cash",
+      "comment": ""
+    },
+    {
+      "id": "E-1764413333799",
+      "date": "2025-11-29",
+      "time": "13:48:53",
+      "timestamp": 1764413333799,
+      "description": "M-PESA -SELCOM",
+      "category": "Miscellaneous",
+      "amount": 3500,
+      "payment": "Cash",
+      "comment": "Transfer charge"
+    },
+    {
+      "id": "E-1764413684121",
+      "date": "2025-11-29",
+      "time": "13:54:44",
+      "timestamp": 1764413684121,
+      "description": "Office Repairs",
+      "category": "Miscellaneous",
+      "amount": 410000,
+      "payment": "Cash",
+      "comment": "Fundi Welding"
+    },
+    {
+      "id": "E-1764435386045",
+      "date": "2025-11-29",
+      "time": "19:56:26",
+      "timestamp": 1764435386045,
+      "description": "Home Groceries",
+      "category": "Groceries",
+      "amount": 23800,
+      "payment": "Cash",
+      "comment": ""
+    }
+  ],
+  "customers": [
+    {
+      "name": "WALK IN",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "totalPurchases": 0,
+      "id": "C-000001"
+    },
+    {
+      "id": "C-HAYSAM_RAMADHAN_1764620583408",
+      "name": "HAYSAM RAMADHAN",
+      "email": "danielidrissa12@gmail.com",
+      "phone": "+255745861993",
+      "address": "",
+      "totalPurchases": 0
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-INV-235639",
+      "number": "INV-235639",
+      "customer": "HAYSAM RAMADHAN",
+      "date": "2025-11-30",
+      "dueDate": "2025-12-02",
+      "items": [
+        {
+          "amount": 50000,
+          "description": "Food processing"
+        }
+      ],
+      "amount": 50000,
+      "status": "Paid",
+      "subtotal": 50000,
+      "taxRate": 0,
+      "taxAmount": 0,
+      "currencyCode": "TZS",
+      "currencySymbol": "Tsh"
+    },
+    {
+      "id": "INV-INV-865862",
+      "number": "INV-865862",
+      "customer": "HAYSAM RAMADHAN",
+      "date": "2025-11-30",
+      "dueDate": "2025-11-30",
+      "items": [
+        {
+          "amount": 5000,
+          "description": "John"
+        }
+      ],
+      "amount": 5000,
+      "status": "Paid",
+      "subtotal": 5000,
+      "taxRate": 0,
+      "taxAmount": 0,
+      "currencyCode": "TZS",
+      "currencySymbol": "Tsh"
+    }
+  ],
+  "receipts": [
+    {
+      "id": "RCPT-1764154193763",
+      "number": "RCPT-193763",
+      "customer": "WALK IN",
+      "customerEmail": "",
+      "date": "2025-11-26",
+      "time": "13:49:53",
+      "timestamp": 1764154193763,
+      "description": "Food services",
+      "amount": 5000,
+      "paymentMethod": "Cash",
+      "currencyCode": "TZS",
+      "currencySymbol": "Tsh"
+    },
+    {
+      "id": "RCPT-1764154483367",
+      "number": "RCPT-483368",
+      "customer": "Danielidrissa12@gmail.com",
+      "customerEmail": "",
+      "date": "2025-11-26",
+      "time": "13:54:43",
+      "timestamp": 1764154483367,
+      "description": "Office tools",
+      "amount": 60000,
+      "paymentMethod": "Cash",
+      "currencyCode": "TZS",
+      "currencySymbol": "Tsh"
+    },
+    {
+      "id": "RCPT-1764515789112",
+      "number": "RCPT-789112",
+      "customer": "Daniel idrissa",
+      "customerEmail": "eastwindstationery12@gmail.com",
+      "date": "2025-11-30",
+      "time": "6:16:29 PM",
+      "timestamp": 1764515789112,
+      "description": "Food",
+      "amount": 34000,
+      "paymentMethod": "Cash",
+      "currencyCode": "TZS",
+      "currencySymbol": "Tsh"
+    }
+  ],
+  "categories": [
+    "PENS AND PENCILS",
+    "NOTEBOOKS & DIARIES",
+    "COUNTERS",
+    "Printing",
+    "PASSPORT",
+    "BAHASHA",
+    "Drinks",
+    "Services",
+    "Plans",
+    "COPY",
+    "ONLINE"
+  ],
+  "inventory": {
+    "Balloons": {
+      "stock": 40,
+      "minAlert": 5
+    },
+    "Nataraj Pen": {
+      "stock": 0,
+      "minAlert": 5
+    },
+    "Sticky Notes": {
+      "stock": 50,
+      "minAlert": 5
+    },
+    "Nataraj Pens": {
+      "stock": 50,
+      "minAlert": 5
+    },
+    "Nataraj pencils": {
+      "stock": 100,
+      "minAlert": 5
+    },
+    "Quire 03": {
+      "stock": 64,
+      "minAlert": 5
+    },
+    "Quire 02": {
+      "stock": 100,
+      "minAlert": 5
+    },
+    "Quire 04": {
+      "stock": 50,
+      "minAlert": 5
+    },
+    "Bahasha A4": {
+      "stock": 60,
+      "minAlert": 5
+    },
+    "Premium Water": {
+      "stock": 100,
+      "minAlert": 5
+    },
+    "Orange Juice": {
+      "stock": 40,
+      "minAlert": 5
+    }
+  },
+  "notes": [
+    {
+      "id": "N-1763115828163",
+      "title": "MADENI YA MAMA",
+      "content": "50,000 - YA IRENE\n20,000 - YA TIGO PESA\n15,000 - TO MOM\n40,000 - To Mmassy\n\nTOTAL = 125,000/=",
+      "date": "2025-11-14",
+      "time": "1:23:48 PM",
+      "timestamp": 1763115828163,
+      "tags": [
+        "urgent"
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "id": "T-1763549531568",
+      "channel": "mpesa",
+      "customerName": "N/A",
+      "type": "deposit",
+      "amount": 200000,
+      "date": "2025-11-19",
+      "time": "1:52:11 PM",
+      "timestamp": 1763549531568
+    },
+    {
+      "id": "T-1763549592034",
+      "channel": "mpesa",
+      "customerName": "N/A",
+      "type": "withdrawal",
+      "amount": 150000,
+      "date": "2025-11-19",
+      "time": "1:53:12 PM",
+      "timestamp": 1763549592034
+    },
+    {
+      "id": "T-1763882578880",
+      "channel": "mpesa",
+      "customerName": "N/A",
+      "type": "withdrawal",
+      "amount": 5000,
+      "date": "2025-11-23",
+      "time": "10:22:58",
+      "timestamp": 1763882578880
+    }
+  ],
+  "unpaidEntries": [
+    {
+      "id": "U-1763295143155",
+      "name": "WALK IN",
+      "type": "Alizeti",
+      "amount": 18000,
+      "date": "2025-11-16",
+      "time": "3:21:30 PM",
+      "timestamp": 1763295690144,
+      "paid": true
+    },
+    {
+      "id": "U-1763295118127",
+      "name": "WALK IN",
+      "type": "NATARAJ PEN",
+      "amount": 1000,
+      "date": "2025-11-16",
+      "time": "3:11:58 PM",
+      "timestamp": 1763295118127,
+      "paid": true
+    },
+    {
+      "id": "U-1763295153345",
+      "name": "WALK IN",
+      "type": "Cooking Oil",
+      "amount": 15000,
+      "date": "2025-11-16",
+      "time": "3:12:33 PM",
+      "timestamp": 1763295153345,
+      "paid": true
+    },
+    {
+      "id": "U-1764156216120",
+      "name": "Ennes",
+      "type": "Lending",
+      "amount": 5000,
+      "date": "2025-11-26",
+      "time": "14:23:36",
+      "timestamp": 1764156216120,
+      "paid": false
+    },
+    {
+      "id": "U-1764409590161",
+      "name": "Mom",
+      "type": "Money for M-Pesa repayment",
+      "amount": 20000,
+      "date": "2025-11-29",
+      "time": "12:46:30",
+      "timestamp": 1764409590161,
+      "paid": true
+    }
+  ],
+  "transactionFloats": {
+    "mpesa": {
+      "initialAccount": 17100,
+      "currentAccount": -27900,
+      "initialCash": 0,
+      "currentCash": 45000,
+      "initial": 17100,
+      "current": -27900
+    },
+    "crdb": {
+      "initialAccount": 300,
+      "currentAccount": 300,
+      "initialCash": 0,
+      "currentCash": 0,
+      "initial": 300,
+      "current": 300
+    },
+    "nmb": {
+      "initialAccount": 0,
+      "currentAccount": 0,
+      "initialCash": 0,
+      "currentCash": 0,
+      "initial": 0,
+      "current": 0
+    },
+    "airtel": {
+      "initialAccount": 0,
+      "currentAccount": 0,
+      "initialCash": 0,
+      "currentCash": 0,
+      "initial": 0,
+      "current": 0
+    },
+    "halopesa": {
+      "initialAccount": 0,
+      "currentAccount": 0,
+      "initialCash": 0,
+      "currentCash": 0,
+      "initial": 0,
+      "current": 0
+    },
+    "yas": {
+      "initialAccount": 0,
+      "currentAccount": 0,
+      "initialCash": 0,
+      "currentCash": 0,
+      "initial": 0,
+      "current": 0
+    }
+  },
+  "dailyTarget": 0,
+  "monthlyTarget": 0,
+  "exportDate": "2025-12-01T20:24:14.973Z",
+  "version": "2.0"
+}
