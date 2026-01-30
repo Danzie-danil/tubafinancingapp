@@ -6318,6 +6318,7 @@
             , tags: [] // Global tag library
             , tagFilters: {} // Per-section tag filters
             , tagColors: {} // Tag name -> color mapping
+            , categoryTags: {}
             , showSalesHistory: false
             , inlineLoanEdit: {}
         };
@@ -6475,6 +6476,12 @@
                     }
                 });
             });
+            if (state.categoryTags) {
+                Object.keys(state.categoryTags).forEach(cat => {
+                    const tags = Array.isArray(state.categoryTags[cat]) ? state.categoryTags[cat] : [];
+                    state.categoryTags[cat] = tags.filter(t => t !== tag);
+                });
+            }
 
             saveData();
             if (syncEnabled) syncInBackground();
@@ -6485,6 +6492,12 @@
             const tag = tagName.toLowerCase();
             addTag(tag);
 
+            if (item.__section === 'categories') {
+                const name = String(item.name || item.id || '');
+                if (!state.categoryTags) state.categoryTags = {};
+                if (!Array.isArray(state.categoryTags[name])) state.categoryTags[name] = Array.isArray(item.tags) ? item.tags : [];
+                item.tags = state.categoryTags[name];
+            }
             if (!item.tags) item.tags = [];
             if (!item.tags.includes(tag)) {
                 item.tags.push(tag);
@@ -6497,8 +6510,16 @@
             if (!item || !item.tags) return false;
             const tag = tagName.toLowerCase();
             const originalLength = item.tags.length;
-            item.tags = item.tags.filter(t => t !== tag);
-            return item.tags.length < originalLength;
+            const filtered = item.tags.filter(t => t !== tag);
+            if (item.__section === 'categories') {
+                const name = String(item.name || item.id || '');
+                if (!state.categoryTags) state.categoryTags = {};
+                state.categoryTags[name] = filtered;
+                item.tags = filtered;
+                return filtered.length < originalLength;
+            }
+            item.tags = filtered;
+            return filtered.length < originalLength;
         }
 
         function hasTag(item, tagName) {
@@ -6509,6 +6530,14 @@
 
         function getItemTags(item) {
             return Array.isArray(item?.tags) ? item.tags : [];
+        }
+        function getCategoryTagItem(cat) {
+            const name = String(cat || '');
+            if (!name) return null;
+            if (!state.categoryTags) state.categoryTags = {};
+            const tags = Array.isArray(state.categoryTags[name]) ? state.categoryTags[name] : [];
+            if (!Array.isArray(state.categoryTags[name])) state.categoryTags[name] = tags;
+            return { id: name, name, tags: state.categoryTags[name], __section: 'categories' };
         }
 
         function renderTagBadge(tag) {
@@ -11683,6 +11712,14 @@
         };
 
         function findItemById(section, itemId) {
+            if (section === 'categories') {
+                const name = String(itemId || '');
+                if (!name) return null;
+                if ((state.categories || []).includes(name)) {
+                    return getCategoryTagItem(name);
+                }
+                return null;
+            }
             const sectionMap = {
                 'sales': state.sales,
                 'products': state.products,
@@ -12288,7 +12325,7 @@
                     '<div class="form-group" data-label="Comment"><input type="text" id="incComment_' + i.timestamp + '" value="' + (i.comment || '') + '" placeholder="Comment"></div>'
                 ) : '') +
                 '<div class="flex-gap" style="margin-top:8px;">' +
-                (editing ? '<button class="btn-small btn-success" onclick="saveIncomeInlineEdit(' + ((state.income||[]).indexOf(i)) + ')">Save</button><button class="btn-small btn-secondary" onclick="toggleIncomeInlineEdit(' + ((state.income||[]).indexOf(i)) + ')">Cancel</button>' : '<button class="btn-small" onclick="toggleIncomeInlineEdit(' + ((state.income||[]).indexOf(i)) + ')">Edit</button><button class="btn-small btn-danger btn-delete" data-action="delete" onclick="deleteIncomeIndex(' + ((state.income||[]).indexOf(i)) + ')">Delete</button>') +
+                (editing ? '<button class="btn-small btn-success" onclick="saveIncomeInlineEdit(' + i.timestamp + ')">Save</button><button class="btn-small btn-secondary" onclick="toggleIncomeInlineEdit(' + i.timestamp + ')">Cancel</button>' : '<button class="btn-small" onclick="toggleIncomeInlineEdit(' + i.timestamp + ')">Edit</button><button class="btn-small btn-danger btn-delete" data-action="delete" onclick="deleteIncomeIndex(' + i.timestamp + ')">Delete</button>') +
                 '<button class="btn-small" style="' + (state.theme === 'dark' ? 'background:#1f2937;color:#e5e7eb;border:1px solid #374151;' : 'background:#e8e8e8;color:#333;border:1px solid #999;') + '" onclick="openItemTagsModal(\'income\', \'' + (i.id || i.timestamp) + '\')">📌 Tag</button>' +
                 '</div>' +
                 renderTagBadges(i) +
@@ -12855,8 +12892,20 @@
             openInlineEditModal('Edit Expense', body, `saveExpenseInlineEditFromModal(${ts})`);
         }
 
-        function openIncomeInlineEditModal(i){
-            const it = (state.income || [])[i];
+        function resolveIncomeIndex(ref){
+            const arr = state.income || [];
+            if (typeof ref === 'number' && Number.isInteger(ref) && ref >= 0 && arr[ref]) return ref;
+            const ts = typeof ref === 'number' ? ref : parseInt(ref, 10);
+            if (!isNaN(ts)) {
+                const idx = arr.findIndex(x => Number(x.timestamp) === Number(ts));
+                if (idx >= 0) return idx;
+            }
+            return -1;
+        }
+
+        function openIncomeInlineEditModal(ref){
+            const idx = resolveIncomeIndex(ref);
+            const it = (state.income || [])[idx];
             if (!it) return showToast('Income not found', 'error');
             const ts = it.timestamp;
             const body = `
@@ -12865,7 +12914,7 @@
                 <div class="form-group" data-label="Payment"><select id="incPay_${ts}"><option ${it.payment === 'Cash' ? 'selected' : ''}>Cash</option><option ${it.payment === 'Card' ? 'selected' : ''}>Card</option><option ${it.payment === 'Mobile Money' ? 'selected' : ''}>Mobile Money</option><option ${it.payment === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option></select></div>
                 <div class="form-group" data-label="Comment"><input type="text" id="incComment_${ts}" value="${escapeHTML(it.comment || '')}" placeholder="Comment"></div>
             `;
-            openInlineEditModal('Edit Income', body, `saveIncomeInlineEditFromModal(${i})`);
+            openInlineEditModal('Edit Income', body, `saveIncomeInlineEditFromModal(${ts})`);
         }
 
         function openCustomerInlineEditModal(i){
@@ -12951,8 +13000,8 @@
             if (ok) closeInlineEditModal();
         }
 
-        async function saveIncomeInlineEditFromModal(i){
-            const ok = await saveIncomeInlineEdit(i);
+        async function saveIncomeInlineEditFromModal(ref){
+            const ok = await saveIncomeInlineEdit(ref);
             if (ok) closeInlineEditModal();
         }
 
@@ -13650,7 +13699,6 @@
                     }
                 } catch { }
             }
-            state.transactions.splice(idx, 1);
             calculateFloatBalances();
             saveData();
             render();
@@ -14532,7 +14580,6 @@
                     }
                 } catch { }
             }
-            state.products.splice(i, 1);
             saveData();
             render();
             showToast("Product deleted", "success");
@@ -14615,6 +14662,10 @@
                                 &nbsp;•&nbsp;
                                 Type: ${(() => { const k = getCategoryKind(cat); return k==='service'?'Service':(k==='product'?'Product':'Mixed'); })()}
                             </div>
+                            ${(() => {
+                    const tagItem = getCategoryTagItem(cat);
+                    return tagItem ? renderItemTagsUI(tagItem, 'categories') : '';
+                })()}
                         </div>
                         <div class="flex-gap period-card-actions">
                             ${(() => {
@@ -14681,8 +14732,10 @@
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
             selected.sort((a, b) => b - a).forEach(i => {
                 const name = state.categories[i];
-                if (syncEnabled && name) { try { deleteOne('categories', { name }); } catch { } }
-                state.categories.splice(i, 1);
+                if (name) {
+                    if (state.categoryTags && state.categoryTags[name]) delete state.categoryTags[name];
+                    try { deleteOne('categories', { name }); } catch { }
+                }
             });
 
             state.selectedItems.categories = {};
@@ -14718,7 +14771,7 @@
         }
 
         function toggleCategoryInlineEdit(i) { openCategoryInlineEditModal(i); }
-        function saveCategoryInlineEdit(i) { const oldName = state.categories[i]; const nameVal = document.getElementById(`catName_${i}`)?.value || oldName; const newName = toCategoryCase(String(nameVal || '').trim()); if (!newName) return false; if (state.categories.includes(newName) && newName !== oldName) { showToast('Category already exists', 'error'); return false; } state.categories[i] = newName; state.products.forEach(p => { if (p.category === oldName) p.category = newName; }); state.categoryKinds = state.categoryKinds || {}; const kindSel = document.getElementById(`catKind_${i}`); if (kindSel) { state.categoryKinds[newName] = (kindSel.value === 'service') ? 'service' : 'product'; } else if (state.categoryKinds[oldName] && oldName !== newName) { state.categoryKinds[newName] = state.categoryKinds[oldName]; } if (oldName !== newName) { delete state.categoryKinds[oldName]; } saveData(); state.inlineEditCategories[i] = false; render(); showToast('Category updated', 'success'); if (syncEnabled) { const kindOut = state.categoryKinds[newName] || 'product'; upsertOne('categories', { name: newName, kind: kindOut }); if (oldName !== newName) { try { deleteOne('categories', { name: oldName }); } catch {} } syncInBackground(); } return true; }
+        function saveCategoryInlineEdit(i) { const oldName = state.categories[i]; const nameVal = document.getElementById(`catName_${i}`)?.value || oldName; const newName = toCategoryCase(String(nameVal || '').trim()); if (!newName) return false; if (state.categories.includes(newName) && newName !== oldName) { showToast('Category already exists', 'error'); return false; } state.categories[i] = newName; state.products.forEach(p => { if (p.category === oldName) p.category = newName; }); state.categoryKinds = state.categoryKinds || {}; const kindSel = document.getElementById(`catKind_${i}`); if (kindSel) { state.categoryKinds[newName] = (kindSel.value === 'service') ? 'service' : 'product'; } else if (state.categoryKinds[oldName] && oldName !== newName) { state.categoryKinds[newName] = state.categoryKinds[oldName]; } if (oldName !== newName) { delete state.categoryKinds[oldName]; } if (oldName !== newName && state.categoryTags && state.categoryTags[oldName]) { state.categoryTags[newName] = state.categoryTags[oldName]; delete state.categoryTags[oldName]; } saveData(); state.inlineEditCategories[i] = false; render(); showToast('Category updated', 'success'); if (syncEnabled) { const kindOut = state.categoryKinds[newName] || 'product'; upsertOne('categories', { name: newName, kind: kindOut }); if (oldName !== newName) { try { deleteOne('categories', { name: oldName }); } catch {} } syncInBackground(); } return true; }
         function getCategoryKind(cat){ try { const map = state.categoryKinds || {}; const k = map[cat]; if (k) return k; const prods = (state.products || []).filter(p => String(p.category || '') === String(cat)); if (!prods.length) return 'product'; const hasProd = prods.some(p => p.hasStock !== false); const hasServ = prods.some(p => p.hasStock === false); if (hasServ && !hasProd) return 'service'; if (hasProd && !hasServ) return 'product'; return 'mixed'; } catch { return 'product'; } }
         function renderBulkCategoriesSection(){
             state.bulkCategoryRows = state.bulkCategoryRows || [];
@@ -14845,15 +14898,13 @@
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
             const cat = state.categories[i];
             if (!cat) return;
-            state.categories.splice(i, 1);
+            if (state.categoryTags && state.categoryTags[cat]) delete state.categoryTags[cat];
+            try { await deleteOne('categories', { name: cat }); } catch {}
             saveData();
             render();
             showToast("Category deleted", "success");
 
-            if (syncEnabled) {
-                try { await deleteOne('categories', { name: cat }); } catch {}
-                syncInBackground();
-            }
+            if (syncEnabled) syncInBackground();
         }
 
         function renderExpenses() {
@@ -15093,7 +15144,6 @@
                         await deleteOne('expenses', { timestamp: exp.timestamp });
                     }
                 } catch { }
-                state.expenses.splice(idx, 1);
                 saveData();
                 render();
                 showToast("Expense deleted", "success", "Undo", function(){ try { state.expenses.push(exp); saveData(); render(); } catch {} });
@@ -15236,7 +15286,7 @@
                                 </div>
                                 <div class="item-subtitle">${i.date} | ${i.payment}${i.comment ? '<br>💬 ' + i.comment : ''}</div>
                                 ${(() => {
-                            const idxRef = (state.income || []).indexOf(i); const editing = state.inlineEditIncome && state.inlineEditIncome[i.timestamp]; return editing ? `
+                            const idxRef = i.timestamp; const editing = state.inlineEditIncome && state.inlineEditIncome[i.timestamp]; return editing ? `
                                 <div class=\"form-group\" data-label=\"Source\"><input type=\"text\" id=\"incSource_${i.timestamp}\" value=\"${i.source}\" placeholder=\"Source\"></div>
                                 <div class=\"form-group\" data-label=\"Amount\"><input type=\"text\" id=\"incAmt_${i.timestamp}\" class=\"money-input\" value=\"${i.amount}\" placeholder=\"Amount\"></div>
                                 <div class=\"form-group\" data-label=\"Payment\"><select id=\"incPay_${i.timestamp}\"><option ${i.payment === 'Cash' ? 'selected' : ''}>Cash</option><option ${i.payment === 'Card' ? 'selected' : ''}>Card</option><option ${i.payment === 'Mobile Money' ? 'selected' : ''}>Mobile Money</option><option ${i.payment === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option></select></div>
@@ -15337,17 +15387,18 @@
             try { document.getElementById('incomeSource').value = 'Loan'; toggleIncomeSource(); } catch {}
         }
 
-        async function toggleIncomeInlineEdit(i) { openIncomeInlineEditModal(i); }
-        async function saveIncomeInlineEdit(i) { const it = (state.income || [])[i]; if (!it) return false; const src = document.getElementById(`incSource_${it.timestamp}`)?.value || it.source; const amt = parseMoney(document.getElementById(`incAmt_${it.timestamp}`)?.value || it.amount); const pay = document.getElementById(`incPay_${it.timestamp}`)?.value || it.payment; const comm = document.getElementById(`incComment_${it.timestamp}`)?.value || it.comment || ''; const asCap = (String(document.getElementById(`incCapital_${it.timestamp}`)?.value || (it.asCapital === true || it.as_capital === true ? 'yes' : 'no')) === 'yes'); const includeT = !!document.getElementById(`incTithing_${it.timestamp}`)?.checked; if (isNaN(amt) || amt <= 0) { showToast('Invalid amount', 'error'); return false; } it.source = src; it.amount = amt; it.payment = pay; it.comment = comm; it.asCapital = asCap; it.includeTithing = includeT; saveData(); state.inlineEditIncome[it.timestamp] = false; render(); showToast('Income updated', 'success'); if (syncEnabled) { try { await upsertOne('income', { date: it.date, time: it.time, timestamp: it.timestamp, source: it.source, amount: it.amount, payment: it.payment, comment: it.comment || '', as_capital: it.asCapital === true, include_in_tithing: it.includeTithing !== false }); } catch {} } return true; }
+        async function toggleIncomeInlineEdit(ref) { openIncomeInlineEditModal(ref); }
+        async function saveIncomeInlineEdit(ref) { const idx = resolveIncomeIndex(ref); const it = (state.income || [])[idx]; if (!it) return false; const src = document.getElementById(`incSource_${it.timestamp}`)?.value || it.source; const amt = parseMoney(document.getElementById(`incAmt_${it.timestamp}`)?.value || it.amount); const pay = document.getElementById(`incPay_${it.timestamp}`)?.value || it.payment; const comm = document.getElementById(`incComment_${it.timestamp}`)?.value || it.comment || ''; const asCap = (String(document.getElementById(`incCapital_${it.timestamp}`)?.value || (it.asCapital === true || it.as_capital === true ? 'yes' : 'no')) === 'yes'); const includeT = !!document.getElementById(`incTithing_${it.timestamp}`)?.checked; if (isNaN(amt) || amt <= 0) { showToast('Invalid amount', 'error'); return false; } it.source = src; it.amount = amt; it.payment = pay; it.comment = comm; it.asCapital = asCap; it.includeTithing = includeT; saveData(); state.inlineEditIncome[it.timestamp] = false; render(); showToast('Income updated', 'success'); if (syncEnabled) { try { await upsertOne('income', { date: it.date, time: it.time, timestamp: it.timestamp, source: it.source, amount: it.amount, payment: it.payment, comment: it.comment || '', as_capital: it.asCapital === true, include_in_tithing: it.includeTithing !== false }); } catch {} } return true; }
 
-        async function deleteIncomeIndex(i) {
+        async function deleteIncomeIndex(ref) {
             try { playDeleteSound(); } catch (e) { }
             const ok = await requirePinForDestructive('delete');
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
-            const it = (state.income || [])[i];
+            const idx = resolveIncomeIndex(ref);
+            const it = (state.income || [])[idx];
             if (it) {
                 try { await deleteOne('income', { timestamp: it.timestamp }); } catch { }
-                state.income.splice(i, 1); saveData(); render();
+                saveData(); render();
                 showToast('Income deleted', 'success');
             }
         }
@@ -15613,7 +15664,6 @@
                 if (idx !== -1) {
                     const ex = state.expenses[idx];
                     try { deleteOne('expenses', { id: ex.id }); } catch { }
-                    state.expenses.splice(idx, 1);
                 }
             } catch { }
             saveData();
@@ -17348,7 +17398,6 @@
                 state.inventory[p.itemName] = inv;
             }
             try { deleteOne('inventory_purchases', { timestamp: ts }); } catch { }
-            state.inventoryPurchases = (state.inventoryPurchases || []).filter(x => x.timestamp !== ts);
             try {
                 const periodComment = `Period ${p.cycleNumber} `;
                 const idx = (state.expenses || []).findIndex(e => e.category === 'Inventory Purchase' && e.comment === periodComment);
@@ -17357,7 +17406,6 @@
                     if (state.expenses[idx].amount === 0) {
                         const expId = state.expenses[idx].id;
                         try { deleteOne('expenses', { id: expId }); } catch { }
-                        state.expenses.splice(idx, 1);
                     } else {
                         const e = state.expenses[idx];
                         await upsertOne('expenses', {
@@ -17961,7 +18009,6 @@
                     }
                 } catch { }
             }
-            state.customers.splice(i, 1);
             saveData();
             render();
             showToast("Customer deleted", "success");
@@ -18430,8 +18477,7 @@
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
             selected.sort((a, b) => b - a).forEach(i => {
                 const inv = state.invoices[i];
-                if (syncEnabled && inv) { try { deleteOne('invoices', { number: inv.number }); } catch { } }
-                state.invoices.splice(i, 1);
+                if (inv) { try { deleteOne('invoices', { number: inv.number }); } catch { } }
             });
 
             state.selectedItems.unpaid_invoices = {};
@@ -18487,8 +18533,7 @@
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
             selected.sort((a, b) => b - a).forEach(i => {
                 const inv = state.invoices[i];
-                if (syncEnabled && inv) { try { deleteOne('invoices', { number: inv.number }); } catch { } }
-                state.invoices.splice(i, 1);
+                if (inv) { try { deleteOne('invoices', { number: inv.number }); } catch { } }
             });
 
             state.selectedItems.paid_invoices = {};
@@ -18513,7 +18558,6 @@
                     }
                 } catch { }
             }
-            state.invoices.splice(index, 1);
             saveData();
             render();
             showToast("Invoice deleted", "success");
@@ -19054,7 +19098,6 @@
                     }
                 } catch { }
             }
-            state.receipts.splice(idx, 1);
             saveData();
             render();
             showToast("Receipt deleted", "success");
@@ -19106,8 +19149,7 @@
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
             selected.sort((a, b) => b - a).forEach(i => {
                 const r = state.receipts[i];
-                if (syncEnabled && r) { try { deleteOne('receipts', { timestamp: r.timestamp }); } catch { } }
-                state.receipts.splice(i, 1);
+                if (r) { try { deleteOne('receipts', { timestamp: r.timestamp }); } catch { } }
             });
 
             state.selectedItems.receipts = {};
@@ -20025,7 +20067,6 @@
                         } catch { }
                     })();
                 }
-                state.unpaidEntries.splice(idx, 1);
                 saveData();
                 render();
                 showToast("Entry deleted", "success");
@@ -20536,7 +20577,6 @@
                         }
                     } catch { }
                 }
-                state.notes.splice(state.currentNoteIndex, 1);
                 saveData();
                 closeNoteModal();
                 render();
@@ -20674,8 +20714,6 @@
             const ok = await requirePinForDestructive('delete');
             if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
             try { deleteOne('assets', { timestamp: it.timestamp }); } catch { }
-            arr.splice(index, 1);
-            state.assets = arr;
             saveData();
             render();
             showToast('Asset deleted', 'success');
@@ -20739,7 +20777,6 @@
                 if (expIdx >= 0) {
                     const e = state.expenses[expIdx];
                     try { await deleteOne('expenses', { timestamp: e.timestamp }); } catch {}
-                    state.expenses.splice(expIdx, 1);
                 }
             }
             state.editingAssetIndex = null;
@@ -20780,7 +20817,6 @@
                 if (expIdx >= 0) {
                     const e = state.expenses[expIdx];
                     try { await deleteOne('expenses', { timestamp: e.timestamp }); } catch {}
-                    state.expenses.splice(expIdx, 1);
                 }
             }
             state.inlineEditAssets[ts] = false;
@@ -20929,11 +20965,8 @@
                 if (expIdx >= 0) {
                     const ex = state.expenses[expIdx];
                     try { deleteOne('expenses', { timestamp: ex.timestamp }); } catch { }
-                    state.expenses.splice(expIdx, 1);
                 }
             } catch {}
-            arr.splice(index, 1);
-            state.maintenance = arr;
             saveData();
             render();
             showToast('Maintenance record deleted', 'success');
@@ -20994,7 +21027,6 @@
                 if (expIdx >= 0) {
                     const ex = state.expenses[expIdx];
                     try { deleteOne('expenses', { timestamp: ex.timestamp }); } catch {}
-                    state.expenses.splice(expIdx, 1);
                 }
             }
             state.editingMaintenanceIndex = null;
@@ -21038,7 +21070,6 @@
                 if (expIdx >= 0) {
                     const ex = state.expenses[expIdx];
                     try { deleteOne('expenses', { timestamp: ex.timestamp }); } catch {}
-                    state.expenses.splice(expIdx, 1);
                 }
             }
             state.inlineEditMaintenance[ts] = false;
@@ -21321,11 +21352,13 @@
                 if (!ok) { showToast('Delete failed: PIN required', 'error'); return; }
                 const ts = ln.timestamp || ln.id;
                 const payments = Array.isArray(ln.payments) ? ln.payments.slice() : [];
-                state.loans.splice(index, 1);
                 if (String(ln.type || '').toLowerCase() === 'given' && String((ln.moneySource || ln.money_source || '')).toLowerCase() === 'business') {
                     try {
                         const exIdx = (state.expenses || []).findIndex(e => e && e.timestamp === ts && String(e.category || '').toLowerCase() === 'loan given');
-                        if (exIdx !== -1) state.expenses.splice(exIdx, 1);
+                        if (exIdx !== -1) {
+                            const ex = state.expenses[exIdx];
+                            try { await deleteOne('expenses', { timestamp: ex.timestamp }); } catch {}
+                        }
                     } catch {}
                 }
                 saveData();
@@ -21596,7 +21629,6 @@
                         }
                     } catch { }
                 }
-                state.notes.splice(state.currentNoteIndex, 1);
                 saveData();
                 closeNoteModal();
                 render();
@@ -21622,7 +21654,6 @@
                     }
                 } catch { }
             }
-            state.notes.splice(index, 1);
             saveData();
             render();
             showToast("Note deleted", "success");
@@ -27330,7 +27361,6 @@
         </div>
     </div>
     
-    <script src="js/main.js" type="module"></script>
 </body>
 
 </html>

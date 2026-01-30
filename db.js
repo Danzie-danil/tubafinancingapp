@@ -230,4 +230,5 @@
     return state;
   }
   window.tubaDB = { STORES, openDB, get, put, getAll, softDelete, bulkPut, loadAllIntoState };
-})(); 
+})();
+export const tubaDB = window.tubaDB;
